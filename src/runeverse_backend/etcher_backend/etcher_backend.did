@@ -1,0 +1,29 @@
+type BitcoinNetwork = variant { mainnet; regtest; testnet };
+type EtchingArgs = record {
+  cap : nat;
+  height : opt record { nat64; nat64 };
+  turbo : bool;
+  premine : nat;
+  rune : text;
+  divisibility : nat8;
+  offset : opt record { nat64; nat64 };
+  fee_rate : opt nat64;
+  amount : nat;
+  symbol : nat32;
+};
+type InitArgs = record {
+  network : BitcoinNetwork;
+  ckbtc_minter : principal;
+  schnorr_canister : principal;
+  ckbtc_ledger : principal;
+  timer_for_reveal_txn : nat32;
+};
+service : (InitArgs) -> {
+  confirm_and_convert_ckbtc : () -> (nat64);
+  etch_rune : (EtchingArgs) -> (text, text);
+  get_btc_balance : () -> (nat64);
+  get_deposit_address_for_bitcoin : () -> (text);
+  get_deposit_address_for_ckbtc : () -> (text) query;
+  get_estimated_cbktc_conversion_fee : () -> (nat64) composite_query;
+  query_conversion_status : (nat64) -> (text) composite_query;
+}

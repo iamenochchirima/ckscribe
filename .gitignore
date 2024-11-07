@@ -1,0 +1,33 @@
+# Various IDEs and Editors
+.vscode/
+.idea/
+**/*~
+wasm_files
+
+# Mac OSX temporary files
+.DS_Store
+**/.DS_Store
+
+# dfx temporary files
+.dfx/
+
+# rust
+target/
+
+# frontend code
+**node_modules/
+dist/
+.svelte-kit/
+src/frontend/.DS_Store
+src/frontend/node_modules
+src/frontend/build
+src/frontend/.svelte-kit
+src/frontend/package
+src/frontend/.env
+src/frontend/.env.*
+src/frontend/.env.example
+src/frontend/vite.config.js.timestamp-*
+src/frontend/vite.config.ts.timestamp-*
+
+# environment variables
+.env

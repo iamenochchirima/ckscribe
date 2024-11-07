@@ -1,0 +1,79 @@
+{
+  "canisters": {
+    "ckbtc_minter": {
+      "candid": "src/runeverse_backend/ckbtc_minter/ckbtc_minter.did",
+      "wasm": "src/runeverse_backend/ckbtc_minter/ckbtc_minter.wasm.gz",
+      "type": "custom",
+      "shrink": false
+    },
+    "ckbtc_ledger": {
+      "candid": "src/runeverse_backend/ckbtc_ledger/ckbtc_ledger.did",
+      "wasm": "src/runeverse_backend/ckbtc_ledger/ckbtc_ledger.wasm.gz",
+      "type": "custom",
+      "shrink": false
+    },
+    "ckbtc_kyt": {
+      "candid": "src/runeverse_backend/ckbtc_kyt/ckbtc_kyt.did",
+      "wasm": "src/runeverse_backend/ckbtc_kyt/ckbtc_kyt.wasm.gz",
+      "type": "custom",
+      "shrink": false
+    },
+    "ckbtc_index": {
+      "candid": "src/runeverse_backend/ckbtc_index/ckbtc_index.did",
+      "wasm": "src/runeverse_backend/ckbtc_index/ckbtc_index.wasm.gz",
+      "type": "custom",
+      "shrink": false
+    },
+    "etcher_backend": {
+      "package": "etcher_backend",
+      "candid": "src/runeverse_backend/etcher_backend/etcher_backend.did",
+      "declarations": {
+        "node_compatibility": true
+      },
+      "type": "rust",
+      "optimize": "cycles"
+    },
+    "schnorr_canister": {
+      "type": "custom",
+      "candid": "https://github.com/domwoe/schnorr_canister/releases/latest/download/schnorr_canister.did",
+      "wasm": "https://github.com/domwoe/schnorr_canister/releases/latest/download/schnorr_canister.wasm.gz"
+    },
+    "runeverse_frontend": {
+      "source": [
+        "src/runeverse_frontend/dist"
+      ],
+      "type": "assets",
+      "workspace": "runeverse_frontend"
+    },
+    "internet_identity": {
+      "type": "custom",
+      "candid": "https://github.com/dfinity/internet-identity/releases/download/release-2024-10-18/internet_identity.did",
+      "wasm": "https://github.com/dfinity/internet-identity/releases/download/release-2024-10-18/internet_identity_dev.wasm.gz",
+      "init_arg": "(opt record { captcha_config = opt record { max_unsolved_captchas= 50:nat64; captcha_trigger = variant {Static = variant {CaptchaDisabled}}}})",
+      "remote": {
+        "id": {
+          "ic": "rdmx6-jaaaa-aaaaa-aaadq-cai"
+        }
+      },
+      "frontend": {}
+    }
+  },
+  "defaults": {
+    "bitcoin": {
+      "enabled": true,
+      "log_level": "error",
+      "nodes": ["127.0.0.1:18444"]
+    },
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:4943"
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}
