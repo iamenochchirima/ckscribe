@@ -63,7 +63,7 @@ It will return an address
 3. Sending Bitcoin to the address
 As we're on the localhost, we will be using `bitcoin-cli` for minting some Bitcoins to the address
 ```bash
-docker compose exec bitcoind bitcoin-cli generatetoaddress 1 bcrt1q053c0dhnudmf2f9k3dt8wev2x9cjptqqdmwznn
+docker compose exec bitcoind bitcoin-cli generatetoaddress 1 bcrt1q9ljsgsmutjvwz05rg0mwgwk385fyjh8dqnfppu
 
 docker compose exec bitcoind bitcoin-cli -generate 101
 ```
@@ -128,7 +128,7 @@ dfx canister call etcher_backend get_deposit_address_for_bitcoin
 2. Sending Bitcoins
 As this tutorial is on the localhost, so we will be using `bitcoin-cli` for funding the address
 ```
-docker compose exec bitcoind bitcoin-cli generatetoaddress 1 mx64YrAmpyggwezzbjUHVzZh6RqxGrRsKH
+docker compose exec bitcoind bitcoin-cli generatetoaddress 1 minEb3DvPakt4tTU4SCjAa6NoSYFJMmCb2
 
 docker compose exec bitcoind bitcoin-cli -generate 101 # generating 101 blocks due to coinbase 100 blocks maturity rule
 ```

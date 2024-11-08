@@ -2,7 +2,7 @@
 
 use std::{cell::RefCell, collections::HashMap, time::Duration};
 
-use bitcoin::Transaction;
+use bitcoin::{ecdsa, Transaction};
 use btc_api::check_etching;
 use candid::{CandidType, Principal};
 use ckbtc_api::{CkBTC, CkBTCMinter};
@@ -37,6 +37,7 @@ pub mod ecdsa_api;
 pub mod schnorr_api;
 pub mod tags;
 pub mod utils;
+pub mod test_fns;
 
 #[derive(CandidType, Serialize, Deserialize, Debug)]
 pub enum EcdsaKeyIds {

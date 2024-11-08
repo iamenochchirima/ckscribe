@@ -18,7 +18,7 @@ use bitcoin::{
     TxOut, Txid, Witness,
 };
 use hex::ToHex;
-use ic_cdk::{api::management_canister::bitcoin::{BitcoinNetwork, GetUtxosResponse, Utxo}};
+use ic_cdk::api::management_canister::bitcoin::{BitcoinNetwork, GetUtxosResponse, Utxo};
 use ic_cdk::println;
 use ordinals::{Artifact, Etching, Rune, Runestone, SpacedRune, Terms};
 
@@ -380,9 +380,8 @@ pub async fn build_and_sign_etching_transaction(
     let mut prefix = hashed_tag.clone();
     prefix.append(&mut hashed_tag);
     let signing_data: Vec<_> = prefix.iter().chain(signing_data.iter()).cloned().collect();
-    let schnorr_signature =
-        schnorr_api::schnorr_sign(signing_data.clone(), derivation_path.clone()).await;
-    ic_cdk::println!("sig size: {}", schnorr_signature.len());
+    let schnorr_signature = schnorr_api::schnorr_sign(signing_data.clone(), derivation_path.clone()).await;
+    
     // Verify the signature to be sure that signing works
     let secp = bitcoin::secp256k1::Secp256k1::verification_only();
 
