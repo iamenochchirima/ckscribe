@@ -24,9 +24,11 @@ export interface InitArgs {
   'ckbtc_ledger' : Principal,
   'timer_for_reveal_txn' : number,
 }
+export type Result = { 'Ok' : [string, string] } |
+  { 'Err' : string };
 export interface _SERVICE {
   'confirm_and_convert_ckbtc' : ActorMethod<[], bigint>,
-  'etch_rune' : ActorMethod<[EtchingArgs], [string, string]>,
+  'etch_rune' : ActorMethod<[EtchingArgs], Result>,
   'get_btc_balance' : ActorMethod<[], bigint>,
   'get_deposit_address_for_bitcoin' : ActorMethod<[], string>,
   'get_deposit_address_for_ckbtc' : ActorMethod<[], string>,

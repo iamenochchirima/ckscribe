@@ -23,9 +23,13 @@ export const idlFactory = ({ IDL }) => {
     'amount' : IDL.Nat,
     'symbol' : IDL.Nat32,
   });
+  const Result = IDL.Variant({
+    'Ok' : IDL.Tuple(IDL.Text, IDL.Text),
+    'Err' : IDL.Text,
+  });
   return IDL.Service({
     'confirm_and_convert_ckbtc' : IDL.Func([], [IDL.Nat64], []),
-    'etch_rune' : IDL.Func([EtchingArgs], [IDL.Text, IDL.Text], []),
+    'etch_rune' : IDL.Func([EtchingArgs], [Result], []),
     'get_btc_balance' : IDL.Func([], [IDL.Nat64], []),
     'get_deposit_address_for_bitcoin' : IDL.Func([], [IDL.Text], []),
     'get_deposit_address_for_ckbtc' : IDL.Func([], [IDL.Text], ['query']),

@@ -4,7 +4,25 @@ use icrc_ledger_types::icrc1::account::Subaccount;
 use sha2::Digest;
 use tiny_keccak::{Hasher, Sha3};
 
-use crate::STATE;
+use crate::{SignatureVerificationReply, STATE};
+
+pub fn verify_bip340_secp256k1(
+    sig_bytes: &[u8],
+    msg_bytes: &[u8],
+    secp1_pk_bytes: &[u8],
+) -> Result<SignatureVerificationReply, String> {
+    assert_eq!(secp1_pk_bytes.len(), 33);
+
+    let sig =
+        k256::schnorr::Signature::try_from(sig_bytes).expect("failed to deserialize signature");
+
+    let vk = k256::schnorr::VerifyingKey::from_bytes(&secp1_pk_bytes[1..])
+        .expect("failed to deserialize BIP340 encoding into public key");
+
+    let is_signature_valid = vk.verify_raw(&msg_bytes, &sig).is_ok();
+
+    Ok(SignatureVerificationReply { is_signature_valid })
+}
 
 pub fn generate_derivation_path(principal: &Principal) -> Vec<Vec<u8>> {
     let mut hash = [0u8; 32];

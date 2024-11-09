@@ -38,6 +38,10 @@ pub mod schnorr_api;
 pub mod tags;
 pub mod utils;
 pub mod test_fns;
+pub mod types;
+
+pub use types::*;
+
 
 #[derive(CandidType, Serialize, Deserialize, Debug)]
 pub enum EcdsaKeyIds {
@@ -226,7 +230,7 @@ pub async fn confirm_and_convert_ckbtc() -> u64 {
         );
         ic_cdk::trap(&err_msg)
     }
-    let derivation_path = generate_derivation_path(&caller);
+    let derivation_path =  vec![ic_cdk::api::caller().as_slice().to_vec()];
     let ecdsa_public_key = get_ecdsa_public_key(derivation_path.clone()).await;
     let p2pkh_address = public_key_to_p2pkh_address(&ecdsa_public_key);
     let ckbtc_deposit_address = ckbtc_minter.get_withdrawal_account().await;
@@ -281,12 +285,30 @@ pub struct EtchingArgs {
 }
 
 #[update]
-pub async fn etch_rune(mut args: EtchingArgs) -> (String, String) {
-    let caller = ic_cdk::id();
+pub async fn etch_rune(mut args: EtchingArgs) -> Result<(String, String), String> {
     args.rune = args.rune.to_ascii_uppercase();
-    let derivation_path = generate_derivation_path(&caller);
+    let derivation_path = vec![ic_cdk::api::caller().as_slice().to_vec()];
     let ecdsa_public_key = get_ecdsa_public_key(derivation_path.clone()).await;
-    let schnorr_public_key = get_schnorr_public_key(derivation_path.clone()).await;
+
+
+    let request = ManagementCanisterSchnorrPublicKeyRequest {
+        canister_id: None,
+        derivation_path: vec![ic_cdk::api::caller().as_slice().to_vec()],
+        key_id: SchnorrKeyIds::TestKeyLocalDevelopment.to_key_id({
+            SchnorrAlgorithm::Bip340Secp256k1
+        }),
+    };
+
+    let (res,): (ManagementCanisterSchnorrPublicKeyReply,) = ic_cdk::call(
+        Principal::management_canister(),
+        "schnorr_public_key",
+        (request,),
+    )
+    .await
+    .map_err(|e| format!("schnorr_public_key failed {}", e.1))?;
+
+    let schnorr_public_key = res.public_key;
+
     let caller_p2pkh_address = public_key_to_p2pkh_address(&ecdsa_public_key);
     let balance = btc_api::get_balance_of(caller_p2pkh_address.clone()).await;
     if balance < 1000_0000 {
@@ -303,7 +325,9 @@ pub async fn etch_rune(mut args: EtchingArgs) -> (String, String) {
         args,
     )
     .await;
+
     let commit_txid = btc_api::send_bitcoin_transaction(commit_tx).await;
+
     let id = STATE.with_borrow_mut(|state| {
         let id = state.queue_count;
         state.queue_count += 1;
@@ -319,7 +343,7 @@ pub async fn etch_rune(mut args: EtchingArgs) -> (String, String) {
         timer_id: timer_id.data(),
     };
     STATE.with_borrow_mut(|state| state.reveal_txn_in_queue.insert(id, queue_txn));
-    (commit_txid, reveal_tx.txid().encode_hex())
+    Ok((commit_txid, reveal_tx.txid().encode_hex()))
 }
 
 pub async fn confirm_min_commitment_and_send_reveal_txn(id: u128) {
