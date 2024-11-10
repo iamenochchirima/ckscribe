@@ -2,7 +2,7 @@
 
 use std::{cell::RefCell, collections::HashMap, time::Duration};
 
-use bitcoin::{ecdsa, Transaction};
+use bitcoin::Transaction;
 use btc_api::check_etching;
 use candid::{CandidType, Principal};
 use ckbtc_api::{CkBTC, CkBTCMinter};
@@ -11,7 +11,7 @@ use ic_cdk::{
     api::management_canister::{
         bitcoin::BitcoinNetwork,
         ecdsa::{EcdsaCurve, EcdsaKeyId},
-    }, init, post_upgrade, pre_upgrade, print, query, update
+    }, init, post_upgrade, pre_upgrade, query, update
 };
 use ic_stable_structures::{
     memory_manager::{MemoryId, MemoryManager, VirtualMemory},
@@ -20,7 +20,6 @@ use ic_stable_structures::{
 };
 use icrc_ledger_types::icrc1::account::Account;
 use ordinals::Runestone;
-use schnorr_api::SchnorrKeyId;
 use serde::{Deserialize, Serialize};
 use slotmap::{Key, KeyData};
 
@@ -111,21 +110,21 @@ pub fn init(arg: InitArgs) {
             EcdsaKeyIds::ProductionKey,
             SchnorrKeyId {
                 name: "test_key_1".to_string(),
-                algorithm: schnorr_api::SchnorrAlgorithm::Bip340Secp256k1,
+                algorithm: types::SchnorrAlgorithm::Bip340Secp256k1,
             },
         ),
         BitcoinNetwork::Regtest => (
             EcdsaKeyIds::TestKeyLocalDevelopment,
             SchnorrKeyId {
                 name: "dfx_test_key".to_string(),
-                algorithm: schnorr_api::SchnorrAlgorithm::Bip340Secp256k1,
+                algorithm: types::SchnorrAlgorithm::Bip340Secp256k1,
             },
         ),
         BitcoinNetwork::Testnet => (
             EcdsaKeyIds::TestKey1,
             SchnorrKeyId {
                 name: "test_key_1".to_string(),
-                algorithm: schnorr_api::SchnorrAlgorithm::Bip340Secp256k1,
+                algorithm: types::SchnorrAlgorithm::Bip340Secp256k1,
             },
         ),
     };
@@ -230,7 +229,7 @@ pub async fn confirm_and_convert_ckbtc() -> u64 {
         );
         ic_cdk::trap(&err_msg)
     }
-    let derivation_path =  vec![ic_cdk::api::caller().as_slice().to_vec()];
+    let derivation_path =  generate_derivation_path(&caller);
     let ecdsa_public_key = get_ecdsa_public_key(derivation_path.clone()).await;
     let p2pkh_address = public_key_to_p2pkh_address(&ecdsa_public_key);
     let ckbtc_deposit_address = ckbtc_minter.get_withdrawal_account().await;
@@ -285,33 +284,15 @@ pub struct EtchingArgs {
 }
 
 #[update]
-pub async fn etch_rune(mut args: EtchingArgs) -> Result<(String, String), String> {
+pub async fn etch_rune(mut args: EtchingArgs) -> (String, String) {
+    let caller = ic_cdk::id();
     args.rune = args.rune.to_ascii_uppercase();
-    let derivation_path = vec![ic_cdk::api::caller().as_slice().to_vec()];
+    let derivation_path = generate_derivation_path(&caller);
     let ecdsa_public_key = get_ecdsa_public_key(derivation_path.clone()).await;
-
-
-    let request = ManagementCanisterSchnorrPublicKeyRequest {
-        canister_id: None,
-        derivation_path: vec![ic_cdk::api::caller().as_slice().to_vec()],
-        key_id: SchnorrKeyIds::TestKeyLocalDevelopment.to_key_id({
-            SchnorrAlgorithm::Bip340Secp256k1
-        }),
-    };
-
-    let (res,): (ManagementCanisterSchnorrPublicKeyReply,) = ic_cdk::call(
-        Principal::management_canister(),
-        "schnorr_public_key",
-        (request,),
-    )
-    .await
-    .map_err(|e| format!("schnorr_public_key failed {}", e.1))?;
-
-    let schnorr_public_key = res.public_key;
-
+    let schnorr_public_key = get_schnorr_public_key(derivation_path.clone()).await;
     let caller_p2pkh_address = public_key_to_p2pkh_address(&ecdsa_public_key);
     let balance = btc_api::get_balance_of(caller_p2pkh_address.clone()).await;
-    if balance < 1000_0000 {
+    if balance < 10_000_000 {
         ic_cdk::trap("Not enough balance")
     }
     let utxos_response = btc_api::get_utxos_of(caller_p2pkh_address.clone()).await;
@@ -325,9 +306,7 @@ pub async fn etch_rune(mut args: EtchingArgs) -> Result<(String, String), String
         args,
     )
     .await;
-
     let commit_txid = btc_api::send_bitcoin_transaction(commit_tx).await;
-
     let id = STATE.with_borrow_mut(|state| {
         let id = state.queue_count;
         state.queue_count += 1;
@@ -343,7 +322,7 @@ pub async fn etch_rune(mut args: EtchingArgs) -> Result<(String, String), String
         timer_id: timer_id.data(),
     };
     STATE.with_borrow_mut(|state| state.reveal_txn_in_queue.insert(id, queue_txn));
-    Ok((commit_txid, reveal_tx.txid().encode_hex()))
+    (commit_txid, reveal_tx.txid().encode_hex())
 }
 
 pub async fn confirm_min_commitment_and_send_reveal_txn(id: u128) {

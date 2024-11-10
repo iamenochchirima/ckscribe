@@ -63,7 +63,7 @@ It will return an address
 3. Sending Bitcoin to the address
 As we're on the localhost, we will be using `bitcoin-cli` for minting some Bitcoins to the address
 ```bash
-docker compose exec bitcoind bitcoin-cli generatetoaddress 1 bcrt1qnlewhs5dx85sf3j3z60s0774zszte9js3y5xan
+docker compose exec bitcoind bitcoin-cli generatetoaddress 1 bcrt1qfl9l99jx47np0sn3ymvt9vl9usgng8sk0f69kp
 
 docker compose exec bitcoind bitcoin-cli -generate 101
 ```
@@ -106,7 +106,7 @@ dfx canister call etcher_backend confirm_and_convert_ckbtc
 
 4. Fetch the status of your Converstion transaction
 ```
-dfx canister call etcher_backend query_conversion_status '(7)'
+dfx canister call etcher_backend query_conversion_status '(3)'
 ```
 
 5. Mint blocks to finalize the Transaction
@@ -128,7 +128,7 @@ dfx canister call etcher_backend get_deposit_address_for_bitcoin
 2. Sending Bitcoins
 As this tutorial is on the localhost, so we will be using `bitcoin-cli` for funding the address
 ```
-docker compose exec bitcoind bitcoin-cli generatetoaddress 1 moUMKUCS1jkHNeAJu7u2RStvLEkiSdRD9w
+docker compose exec bitcoind bitcoin-cli generatetoaddress 1 miwRNR5vXUVqWqu3fJVXktDQpNHdqWVuXa
 
 docker compose exec bitcoind bitcoin-cli -generate 101 # generating 101 blocks due to coinbase 100 blocks maturity rule
 ```
@@ -212,4 +212,4 @@ docker stop bitcoind
 docker rm bitcoind
 
 
-6aa3482ce559326402f2ae7c337edda6d841a7ff37fd1be45964a08b69719d4e
+6d55d5d1e2722767278da2581b56c20ca0c45b05577bffb180b0d8de0c8954ca

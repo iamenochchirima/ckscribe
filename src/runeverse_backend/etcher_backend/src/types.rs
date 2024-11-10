@@ -1,7 +1,5 @@
 use candid::{CandidType, Principal};
-use ic_cdk::{query, update};
 use serde::{Deserialize, Serialize};
-use std::convert::{TryFrom, TryInto};
 
 type CanisterId = Principal;
 
@@ -12,6 +10,13 @@ pub enum SchnorrAlgorithm {
     #[serde(rename = "ed25519")]
     Ed25519,
 }
+
+#[derive(CandidType,Deserialize, Serialize, Debug, Clone)]
+pub struct SchnorrKeyId {
+    pub algorithm: SchnorrAlgorithm,
+    pub name: String,
+}
+
 
 #[derive(CandidType, Serialize, Deserialize, Debug)]
 pub struct PublicKeyReply {
@@ -42,12 +47,6 @@ pub struct ManagementCanisterSchnorrPublicKeyReply {
     pub chain_code: Vec<u8>,
 }
 
-#[derive(CandidType, Serialize, Debug, Clone)]
-pub struct SchnorrKeyId {
-    pub algorithm: SchnorrAlgorithm,
-    pub name: String,
-}
-
 #[derive(CandidType, Serialize, Debug)]
 pub struct ManagementCanisterSignatureRequest {
     pub message: Vec<u8>,
@@ -60,6 +59,7 @@ pub struct ManagementCanisterSignatureReply {
     pub signature: Vec<u8>,
 }
 
+#[derive(CandidType, Serialize, Debug)]
 pub enum SchnorrKeyIds {
     #[allow(unused)]
     TestKeyLocalDevelopment,

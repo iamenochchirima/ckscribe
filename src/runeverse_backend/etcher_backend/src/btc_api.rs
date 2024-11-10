@@ -1,12 +1,6 @@
 use std::str::FromStr;
-
 use crate::{
-    ecdsa_api::ecdsa_sign,
-    schnorr_api,
-    tags::Tag,
-    utils::{sec1_to_der, verify_bip340_secp256k1},
-    EtchingArgs, ManagementCanisterSignatureReply, ManagementCanisterSignatureRequest,
-    SchnorrAlgorithm, SchnorrKeyIds, SignatureVerificationReply, STATE,
+    ecdsa_api::ecdsa_sign, schnorr_api, tags::Tag, utils::sec1_to_der, EtchingArgs, STATE,
 };
 use bitcoin::{
     absolute::LockTime,
@@ -22,7 +16,6 @@ use bitcoin::{
     Address, Amount, FeeRate, Network, OutPoint, Script, ScriptBuf, Sequence, Transaction, TxIn,
     TxOut, Txid, Witness,
 };
-use candid::Principal;
 use hex::ToHex;
 use ic_cdk::api::management_canister::bitcoin::{BitcoinNetwork, GetUtxosResponse, Utxo};
 use ic_cdk::println;
@@ -174,8 +167,6 @@ pub async fn build_and_sign_etching_transaction(
     let symbol = char::from_u32(etching_args.symbol).unwrap();
     // building the reveal script
     let secp256k1 = Secp256k1::new();
-
-    let org_schnorr_public_key = schnorr_public_key.clone();
 
     let schnorr_public_key: XOnlyPublicKey =
         PublicKey::from_slice(schnorr_public_key).unwrap().into();
@@ -391,45 +382,19 @@ pub async fn build_and_sign_etching_transaction(
     prefix.append(&mut hashed_tag);
     let signing_data: Vec<_> = prefix.iter().chain(signing_data.iter()).cloned().collect();
 
-    let internal_request = ManagementCanisterSignatureRequest {
-        message: signing_data.clone(),
-        derivation_path: derivation_path.clone(),
-        key_id: SchnorrKeyIds::TestKeyLocalDevelopment
-            .to_key_id({ SchnorrAlgorithm::Bip340Secp256k1 }),
-    };
+    let signing_digest = sha256::Hash::hash(&signing_data).to_byte_array();
 
-    let (internal_reply,): (ManagementCanisterSignatureReply,) =
-        match ic_cdk::api::call::call_with_payment(
-            Principal::management_canister(),
-            "sign_with_schnorr",
-            (internal_request,),
-            26_153_846_153,
-        )
-        .await
-        {
-            Ok(result) => result,
-            Err(e) => ic_cdk::trap(&format!("sign_with_schnorr failed: {e:?}")),
-        };
+    let schnorr_signature =
+        schnorr_api::schnorr_sign(signing_digest.to_vec().clone(), derivation_path.clone()).await;
+    ic_cdk::println!("sig size: {}", schnorr_signature.len());
+    // Verify the signature to be sure that signing works
+    let secp = bitcoin::secp256k1::Secp256k1::verification_only();
 
-    let schnorr_signature = internal_reply.signature;
-
-    assert!(
-        verify_bip340_secp256k1(&schnorr_signature, &signing_data, org_schnorr_public_key)
-            .unwrap()
-            .is_signature_valid
-    );
-
-    // let schnorr_signature = schnorr_api::schnorr_sign(signing_data.clone(), derivation_path.clone()).await;
-
-    // // Verify the signature to be sure that signing works
-    // let secp = bitcoin::secp256k1::Secp256k1::verification_only();
-
-    // let sig_ = schnorr::Signature::from_slice(&schnorr_signature).unwrap();
-    // let digest = sha256::Hash::hash(&signing_data).to_byte_array();
-    // let msg = Message::from_slice(&digest).unwrap();
-    // assert!(secp
-    //     .verify_schnorr(&sig_, &msg, &schnorr_public_key)
-    //     .is_ok());
+    let sig_ = schnorr::Signature::from_slice(&schnorr_signature).unwrap();
+    let msg = Message::from_slice(&signing_digest).unwrap();
+    assert!(secp
+        .verify_schnorr(&sig_, &msg, &schnorr_public_key)
+        .is_ok());
 
     let witness = sighash_cache.witness_mut(0).unwrap();
     witness.push(

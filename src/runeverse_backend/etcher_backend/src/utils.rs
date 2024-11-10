@@ -25,11 +25,7 @@ pub fn verify_bip340_secp256k1(
 }
 
 pub fn generate_derivation_path(principal: &Principal) -> Vec<Vec<u8>> {
-    let mut hash = [0u8; 32];
-    let mut hasher = Sha3::v256();
-    hasher.update(principal.as_slice());
-    hasher.finalize(&mut hash);
-    vec![hash.to_vec()]
+    vec![principal.as_slice().to_vec()]
 }
 
 pub fn generate_subaccount(principal: &Principal) -> Subaccount {
