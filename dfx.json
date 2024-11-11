@@ -1,32 +1,32 @@
 {
   "canisters": {
     "ckbtc_minter": {
-      "candid": "src/runeverse_backend/ckbtc_minter/ckbtc_minter.did",
-      "wasm": "src/runeverse_backend/ckbtc_minter/ckbtc_minter.wasm.gz",
+      "candid": "src/ckscribe_backend/ckbtc_minter/ckbtc_minter.did",
+      "wasm": "src/ckscribe_backend/ckbtc_minter/ckbtc_minter.wasm.gz",
       "type": "custom",
       "shrink": false
     },
     "ckbtc_ledger": {
-      "candid": "src/runeverse_backend/ckbtc_ledger/ckbtc_ledger.did",
-      "wasm": "src/runeverse_backend/ckbtc_ledger/ckbtc_ledger.wasm.gz",
+      "candid": "src/ckscribe_backend/ckbtc_ledger/ckbtc_ledger.did",
+      "wasm": "src/ckscribe_backend/ckbtc_ledger/ckbtc_ledger.wasm.gz",
       "type": "custom",
       "shrink": false
     },
     "ckbtc_kyt": {
-      "candid": "src/runeverse_backend/ckbtc_kyt/ckbtc_kyt.did",
-      "wasm": "src/runeverse_backend/ckbtc_kyt/ckbtc_kyt.wasm.gz",
+      "candid": "src/ckscribe_backend/ckbtc_kyt/ckbtc_kyt.did",
+      "wasm": "src/ckscribe_backend/ckbtc_kyt/ckbtc_kyt.wasm.gz",
       "type": "custom",
       "shrink": false
     },
     "ckbtc_index": {
-      "candid": "src/runeverse_backend/ckbtc_index/ckbtc_index.did",
-      "wasm": "src/runeverse_backend/ckbtc_index/ckbtc_index.wasm.gz",
+      "candid": "src/ckscribe_backend/ckbtc_index/ckbtc_index.did",
+      "wasm": "src/ckscribe_backend/ckbtc_index/ckbtc_index.wasm.gz",
       "type": "custom",
       "shrink": false
     },
-    "etcher_backend": {
-      "package": "etcher_backend",
-      "candid": "src/runeverse_backend/etcher_backend/etcher_backend.did",
+    "inscribe": {
+      "package": "inscribe",
+      "candid": "src/ckscribe_backend/inscribe/inscribe.did",
       "declarations": {
         "node_compatibility": true
       },
@@ -38,12 +38,12 @@
       "candid": "https://github.com/domwoe/schnorr_canister/releases/latest/download/schnorr_canister.did",
       "wasm": "https://github.com/domwoe/schnorr_canister/releases/latest/download/schnorr_canister.wasm.gz"
     },
-    "runeverse_frontend": {
+    "ckscribe_frontend": {
       "source": [
-        "src/runeverse_frontend/dist"
+        "src/ckscribe_frontend/dist"
       ],
       "type": "assets",
-      "workspace": "runeverse_frontend"
+      "workspace": "ckscribe_frontend"
     },
     "internet_identity": {
       "type": "custom",

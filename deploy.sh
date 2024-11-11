@@ -56,7 +56,7 @@ dfx deploy --specified-id mm444-5iaaa-aaaar-qaabq-cai ckbtc_index --argument '(o
 
 dfx deploy --specified-id 6fwhw-fyaaa-aaaap-qb7ua-cai schnorr_canister
 
-dfx deploy etcher_backend --specified-id dyb47-nqaaa-aaaag-qjvba-cai --argument '(record{
+dfx deploy inscribe --specified-id dyb47-nqaaa-aaaag-qjvba-cai --argument '(record{
         network = variant { regtest };
         ckbtc_ledger = principal "mc6ru-gyaaa-aaaar-qaaaq-cai";
         ckbtc_minter = principal "ml52i-qqaaa-aaaar-qaaba-cai";
@@ -66,4 +66,4 @@ dfx deploy etcher_backend --specified-id dyb47-nqaaa-aaaag-qjvba-cai --argument 
 
 dfx deploy internet_identity
 
-dfx deploy --specified-id kho2y-sqaaa-aaaag-qjuta-cai runeverse_frontend
+dfx deploy --specified-id kho2y-sqaaa-aaaag-qjuta-cai ckscribe_frontend

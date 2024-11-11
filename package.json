@@ -8,11 +8,11 @@
     "build": "pnpm build --if-present",
     "prebuild": "pnpm prebuild --if-present",
     "pretest": "pnpm prebuild --if-present",
-    "start": "concurrently \"pnpm --filter runeverse_frontend start\"",
+    "start": "concurrently \"pnpm --filter ckscribe_frontend start\"",
     "test": "pnpm test --if-present"
   },
   "workspaces": [
-    "src/runeverse_frontend"
+    "src/ckscribe_frontend"
   ],
   "type": "module",
   "dependencies": {

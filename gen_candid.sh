@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cargo build --release --target wasm32-unknown-unknown --package etcher_backend
-candid-extractor target/wasm32-unknown-unknown/release/etcher_backend.wasm > src/runeverse_backend/etcher_backend/etcher_backend.did
+cargo build --release --target wasm32-unknown-unknown --package inscribe
+candid-extractor target/wasm32-unknown-unknown/release/inscribe.wasm > src/runeverse_backend/inscribe/inscribe.did

@@ -1,5 +1,5 @@
 [workspace]
 members = [
-    "src//runeverse_backend/etcher_backend"
+    "src/ckscribe_backend/inscribe"
 ]
 resolver = "2"

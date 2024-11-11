@@ -22,8 +22,9 @@ services:
     volumes:
       - index_data:/index-data
     environment:
-      - ORD_BITCOIN_RPC_USERNAME=icp
-      - ORD_BITCOIN_RPC_PASSWORD=test
+      - ORD_BITCOIN_RPC_USERNAME=ic-btc-integration
+      - ORD_BITCOIN_RPC_PASSWORD=QPQiNaph19FqUsCrBRN0FII7lyM26B51fAMeBQzCb-E=
+      - ORD_BITCOIN_RPC_AUTH=rpcauth=ic-btc-integration:cdf2741387f3a12438f69092f0fdad8e$62081498c98bee09a0dce2b30671123fa561932992ce377585e8e08bb0c11dfa
     ports:
       - "8080:8080"
     depends_on:
