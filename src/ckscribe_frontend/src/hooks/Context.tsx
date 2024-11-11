@@ -11,10 +11,10 @@ import {
     AuthClientLoginOptions,
   } from "@dfinity/auth-client";
   import { canisterId as iiCanId } from "../../../declarations/internet_identity";
-  import { canisterId , idlFactory} from "../../../declarations/etcher_backend";
+  import { canisterId , idlFactory} from "../../../declarations/inscribe";
   import { Actor, ActorSubclass, HttpAgent, Identity } from "@dfinity/agent";
 import { network } from "./constants";
-import { _SERVICE } from '../../../declarations/etcher_backend/etcher_backend.did';
+import { _SERVICE } from '../../../declarations/inscribe/inscribe.did';
   
   const localhost = "http://localhost:4943";
   const host = "https://icp0.io";

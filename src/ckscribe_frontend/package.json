@@ -1,10 +1,9 @@
 {
-  "name": "runeverse_frontend",
+  "name": "ckscribe_frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "setup": "pnpm install && dfx canister create runeverse_backend && dfx generate runeverse_backend && dfx deploy",
     "start": "vite --port 3000",
     "prebuild": "dfx generate",
     "build": "tsc && vite build",
