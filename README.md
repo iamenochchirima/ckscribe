@@ -142,7 +142,7 @@ dfx canister call etcher_backend get_btc_balance
 
 ```bash
 dfx canister call etcher_backend etch_rune '(record{
-    rune= "ENOCH.IS.GREAT.RUNE";
+    rune= "MY.THIRD.RUNE.HERE";
     premine= 0;
     divisibility= 2;
     symbol= 65;

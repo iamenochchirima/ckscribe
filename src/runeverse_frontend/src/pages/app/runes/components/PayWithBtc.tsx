@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 
 import ShowBalance from './ShowBalance';
-import { useAuth } from '../hooks/Context';
 import Copy from './Copy';
+import { useAuth } from '../../../../hooks/Context';
     
 
 const BtcPayment: React.FC = () => {

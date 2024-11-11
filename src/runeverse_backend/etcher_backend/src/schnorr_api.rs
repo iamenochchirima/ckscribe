@@ -51,7 +51,6 @@ pub async fn get_schnorr_public_key(derivation_path: Vec<Vec<u8>>) -> Vec<u8> {
             ic_cdk::trap(&format!("schnorr_public_key failed: {}", e.1));
         }
     };
-
     res.public_key
 }
 

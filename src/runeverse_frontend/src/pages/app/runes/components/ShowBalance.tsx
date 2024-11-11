@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
-import { useAuth } from '../hooks/Context';
 import { toast } from 'react-toastify';
+import { useAuth } from '../../../../hooks/Context';
 
 const ShowBalance: React.FC = () => {
     const [btcBalance, setBtcBalance] = useState<bigint>(0n);
