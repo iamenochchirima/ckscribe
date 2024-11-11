@@ -3,7 +3,7 @@ import Copy from './Copy';
 import Button from './Button';
 import ShowBalance from './ShowBalance';
 import { toast } from 'react-toastify';
-import { useAuth } from '../../../../hooks/Context';
+import { useAuth } from '../../../../../hooks/Context';
 
 
 

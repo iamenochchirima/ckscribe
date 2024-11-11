@@ -2,8 +2,8 @@ import React, { useState } from 'react';;
 import PayWithBtc from './PayWithBtc';
 import PayWithCkBtc from './PayWithCkBTC';
 import { toast } from 'react-toastify';
-import { useAuth } from '../../../../hooks/Context';
-import { EtchingArgs } from '../../../../../../declarations/inscribe/inscribe.did';
+import { useAuth } from '../../../../../hooks/Context';
+import { EtchingArgs } from '../../../../../../../declarations/inscribe/inscribe.did';
 
 const Etcher = () => {
   const [rune, setRune] = useState('');
