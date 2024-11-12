@@ -1,10 +1,29 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Etcher from "./components/etch/Etcher"
 import Browse from "./components/browse/Browse"
 import MyRunes from "./components/myrunes/MyRunes"
+import { fetchRunesData } from "../../../api/runes"
 
 const Runes = () => {
   const [show, setShow] = useState("browse")
+  const [runes, setRunes] = useState<any[]>([]);
+  const [address, setAddress] = useState("mxwv4Z59t2mYgfk27F1GwyschHMoscFC7w");
+  const [utxos, setUtxos] = useState<any[]>([]);
+
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const data = await fetchRunesData();
+        setRunes(data);
+      } catch (error) {
+        console.error("Error loading runes:", error);
+      }
+    };
+
+    getData();
+  }, []);
+
+
   return (
     // Your component
     <div className="bg-gradient-to-b from-gray-950 to-blue-950 text-white min-h-screen py-8">
@@ -38,8 +57,8 @@ const Runes = () => {
           </ul>
         </div>
 
-        <div className="container bg-gray-800">
-          {show === "browse" && <Browse />}
+        <div className="container bg-gray-900">
+          {show === "browse" && <Browse {...{runes}} />}
           {show === "etch" && <Etcher />}
           {show === "my-runes" && <MyRunes />}
         </div>
