@@ -61,15 +61,60 @@ const Etcher = () => {
     }
   };
 
+  // TODO: 1. Show the BTC, ICP, SOL etc balanes
+  // 2 . Create a step process to etch 
+
+
+
   return (
     <div className="max-w-2xl mx-auto p-6 bg-gray-800 rounded-lg shadow-lg font-sans">
     {/* Pay Fee Section */}
     <div className="mb-6">
       <label htmlFor="payment-mode" className="block mb-2 font-semibold text-white">
+      <span>
         Pay Fee
+      </span>
         <span aria-label="Additional Information" className="text-sm text-white cursor-help" title="Pay Fee with Bitcoin or CkBTC">&#9432;</span>
       </label>
       <div className="flex space-x-4 mb-4">
+
+
+
+
+        
+      <button
+          
+                className="w-full text-xl font-semibold text-center py-2 px-4 rounded-md transition-all duration-300 transform hover:scale-105 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
+              >
+                Pay With ckBTC
+              </button>
+                <button
+          
+                className="w-full text-xl font-semibold text-center py-2 px-4 rounded-md transition-all duration-300 transform hover:scale-105 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
+              >
+                Pay With Bitcoin
+              </button>
+              <button
+          
+          className="w-full text-xl font-semibold text-center py-2 px-4 rounded-md transition-all duration-300 transform hover:scale-105 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
+        >
+          Pay With ICP
+        </button>
+        <button
+          
+          className="w-full text-xl font-semibold text-center py-2 px-4 rounded-md transition-all duration-300 transform hover:scale-105 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
+        >
+          Pay With Ethereum
+        </button>
+        
+        <button
+          
+          className="w-full text-xl font-semibold text-center py-2 px-4 rounded-md transition-all duration-300 transform hover:scale-105 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
+        >
+          Pay With Solana
+        </button>
+        
+
         <label className={`flex items-center space-x-2 cursor-pointer ${payWithBtc ? '' : ''}`}>
           <input type="radio" name="payment" value="btc" checked={payWithBtc} onChange={() => setPayWithBtc(true)} className="form-radio text-blue-500" />
           <span>Pay with Bitcoin</span>
