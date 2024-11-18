@@ -14,7 +14,6 @@ type EtchingArgs = record {
 type InitArgs = record {
   network : BitcoinNetwork;
   ckbtc_minter : principal;
-  schnorr_canister : principal;
   ckbtc_ledger : principal;
   timer_for_reveal_txn : nat32;
 };

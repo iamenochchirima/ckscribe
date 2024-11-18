@@ -33,10 +33,10 @@
       "type": "rust",
       "optimize": "cycles"
     },
-    "schnorr_canister": {
-      "type": "custom",
-      "candid": "https://github.com/domwoe/schnorr_canister/releases/latest/download/schnorr_canister.did",
-      "wasm": "https://github.com/domwoe/schnorr_canister/releases/latest/download/schnorr_canister.wasm.gz"
+    "ic_siwb_provider": {
+      "candid": "src/ckscribe_backend/ic_siwb_provider/ic_siwb_provider.did",
+      "package": "ic_siwb_provider",
+      "type": "rust"
     },
     "ckscribe_frontend": {
       "source": [

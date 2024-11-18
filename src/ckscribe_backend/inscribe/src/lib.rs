@@ -76,7 +76,6 @@ pub struct State {
     pub network: Option<BitcoinNetwork>,
     pub ecdsa_key: Option<EcdsaKeyIds>,
     pub schnorr_key: Option<SchnorrKeyId>,
-    pub schnorr_canister: Option<Principal>,
     pub queue_count: u128,
     pub timer_for_reveal_txn: u32,
     pub reveal_txn_in_queue: HashMap<u128, QueuedRevealTxn>,
@@ -98,7 +97,6 @@ pub struct InitArgs {
     pub ckbtc_ledger: Principal,
     pub ckbtc_minter: Principal,
     pub network: BitcoinNetwork,
-    pub schnorr_canister: Principal,
     pub timer_for_reveal_txn: u32, // should be provided as mins
 }
 
@@ -133,7 +131,6 @@ pub fn init(arg: InitArgs) {
         state.ckbtc_minter = Some(arg.ckbtc_minter);
         state.ckbtc_ledger = Some(arg.ckbtc_ledger);
         state.ecdsa_key = Some(ecdsa_key_id);
-        state.schnorr_canister = Some(arg.schnorr_canister);
         state.schnorr_key = Some(schnorr_key);
         state.timer_for_reveal_txn = arg.timer_for_reveal_txn;
     })

@@ -54,13 +54,22 @@ dfx deploy --specified-id mm444-5iaaa-aaaar-qaabq-cai ckbtc_index --argument '(o
 }
 })'
 
-dfx deploy --specified-id 6fwhw-fyaaa-aaaap-qb7ua-cai schnorr_canister
+dfx deploy ic_siwb_provider --argument '(record { 
+    domain = "127.0.0.1";
+    uri = "http://127.0.0.1:3000";
+    salt = "123456";
+    network = opt "testnet";
+    scheme = opt "http";
+    statement = opt "Login to the app";
+    sign_in_expires_in = opt 1500000000000; 
+    session_expires_in = opt 604800000000000; 
+    targets = null;
+})'
 
 dfx deploy inscribe --specified-id dyb47-nqaaa-aaaag-qjvba-cai --argument '(record{
         network = variant { regtest };
         ckbtc_ledger = principal "mc6ru-gyaaa-aaaar-qaaaq-cai";
         ckbtc_minter = principal "ml52i-qqaaa-aaaar-qaaba-cai";
-        schnorr_canister = principal "6fwhw-fyaaa-aaaap-qb7ua-cai";
         timer_for_reveal_txn = 1;
 })'
 
