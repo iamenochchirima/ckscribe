@@ -1,0 +1,40 @@
+[package]
+name = "ic_siwb"
+version = "0.0.1"
+edition = "2021"
+authors = ["Ghostcorn <ghostcorn@astrox.network>"]
+description = "."
+license = "MIT"
+homepage = "https://github.com/AstroxNetwork/ic-siwb"
+repository = "https://github.com/AstroxNetwork/ic-siwb"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_bytes = { workspace = true }
+serde_cbor = { workspace = true }
+candid = { workspace = true }
+hex = { workspace = true }
+ic-cdk = { workspace = true }
+ic-cdk-timers = { workspace = true, optional = true }
+icrc-ledger-types = { workspace = true }
+ic-certified-map = { workspace = true }
+url = { workspace = true }
+time = { workspace = true }
+rand_chacha = { workspace = true, optional = true }
+getrandom = { workspace = true }
+k256 = { workspace = true }
+tiny-keccak = { workspace = true }
+sha2 = { workspace = true }
+simple_asn1 = { workspace = true }
+bitcoin = { workspace = true }
+byteorder = { workspace = true }
+base64 = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true }
+rand = { workspace = true }
+hex-literal = { workspace = true }
+
+[features]
+nonce = ["rand_chacha", "ic-cdk-timers"]

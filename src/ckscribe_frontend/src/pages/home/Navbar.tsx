@@ -1,4 +1,5 @@
 import React from 'react'
+import ConnectWallet from '../../components/ConnectWallet'
 
 const Navbar = () => {
   return (
@@ -11,11 +12,7 @@ const Navbar = () => {
         </h3>
       </div>
       <div className="">
-        <button
-          className="px-3 py-1  text-white bg-blue-500 rounded-lg hover:bg-blue-600"
-        >
-          Connect Wallet
-        </button>
+       <ConnectWallet />
       </div>
     </div>
   )
