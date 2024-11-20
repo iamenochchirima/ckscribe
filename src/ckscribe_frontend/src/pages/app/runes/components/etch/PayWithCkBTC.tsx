@@ -9,20 +9,20 @@ import { useAuth } from '../../../../../hooks/Context';
 
 const CkbtcPayment: React.FC = () => {
 
-  const { backendActor, blockId, setBlockId } = useAuth();
+  const { inscribeActor, blockId, setBlockId } = useAuth();
 
   const [ckbtcDepositAddress, setCkbtcDepositAddress] = useState<string>('');
   const [paymentStatus, setPaymentStatus] = useState<string>('Unknown');
 
 
   const fetchCkbtcAddress = async () => {
-    const address = await backendActor.get_deposit_address_for_ckbtc();
+    const address = await inscribeActor.get_deposit_address_for_ckbtc();
     setCkbtcDepositAddress(address);
   };
 
   const confirmAndConvertCkbtc = async () => {
     try {
-      const id = await backendActor.confirm_and_convert_ckbtc();
+      const id = await inscribeActor.confirm_and_convert_ckbtc();
       setBlockId(id);
       await queryTransactionStatus();
     } catch (error) {
@@ -38,7 +38,7 @@ const CkbtcPayment: React.FC = () => {
     }
 
     try {
-      const status = await backendActor.query_conversion_status(id);
+      const status = await inscribeActor.query_conversion_status(id);
       setPaymentStatus(status);
     } catch (error) {
       toast.error(`Failed to fetch status: ${error}`);

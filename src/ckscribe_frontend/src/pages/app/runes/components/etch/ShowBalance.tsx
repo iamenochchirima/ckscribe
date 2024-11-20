@@ -6,17 +6,17 @@ import { useAuth } from '../../../../../hooks/Context';
 const ShowBalance: React.FC = () => {
     const [btcBalance, setBtcBalance] = useState<bigint>(0n);
 
-    const { backendActor } = useAuth();
+    const { inscribeActor } = useAuth();
 
     useEffect(() => {
-        if (backendActor) {
+        if (inscribeActor) {
             refreshBalance();
         }
-    }, [backendActor]);
+    }, [inscribeActor]);
 
     const refreshBalance = async () => {
         try {
-            const balance = await backendActor.get_btc_balance();
+            const balance = await inscribeActor.get_btc_balance();
             console.log("Balance: ", balance);
             setBtcBalance(balance);
         } catch (error) {

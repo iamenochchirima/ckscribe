@@ -8,18 +8,18 @@ import { useAuth } from '../../../../../hooks/Context';
 const BtcPayment: React.FC = () => {
   const [btcDepositAddress, setBtcDepositAddress] = useState<string>('');
 
-  const { backendActor } = useAuth();
+  const { inscribeActor } = useAuth();
 
   const fetchBtcAddress = async () => {
-    const address = await backendActor.get_deposit_address_for_bitcoin();
+    const address = await inscribeActor.get_deposit_address_for_bitcoin();
     setBtcDepositAddress(address);
   };
 
   useEffect(() => {
-    if (backendActor) {
+    if (inscribeActor) {
         fetchBtcAddress();
     }
-  }, [backendActor]);
+  }, [inscribeActor]);
 
   return (
     <div className="flex flex-col items-center p-5 bg-gray-100 rounded-lg shadow-md">

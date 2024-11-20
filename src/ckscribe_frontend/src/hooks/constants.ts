@@ -1,2 +1,2 @@
 export const network = process.env.DFX_NETWORK || "local";
-export const host = network === "ic" ? "https://icp0.io" : "http://localhost:4943";
+export const host = network === "ic" ? "https://icp0.io" : "http://127.0.0.1:4943";

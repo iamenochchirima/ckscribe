@@ -21,7 +21,7 @@ const Etcher = () => {
   const [withBlockHeight, setWithBlockHeight] = useState(true);
   const [payWithBtc, setPayWithBtc] = useState(true);
 
-  const { backendActor} = useAuth();
+  const { inscribeActor} = useAuth();
 
   const turboModeMessage = turbo ? 'Enabled' : 'Disabled';
   const payModeMessage = payWithBtc ? 'Pay with Bitcoin' : 'Pay with CkBTC';
@@ -52,7 +52,7 @@ const Etcher = () => {
     };
 
     try {
-      const result = await backendActor.etch_rune(arg);
+      const result = await inscribeActor.etch_rune(arg);
       console.log(result);
         toast.success('Successfully submitted the Commit Transaction');
     } catch (e) {

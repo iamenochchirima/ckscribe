@@ -9,7 +9,7 @@ use ckbtc_api::{CkBTC, CkBTCMinter};
 use hex::ToHex;
 use ic_cdk::{
     api::management_canister::{
-        bitcoin::BitcoinNetwork,
+        bitcoin::{BitcoinNetwork, Utxo},
         ecdsa::{EcdsaCurve, EcdsaKeyId},
     }, init, post_upgrade, pre_upgrade, query, update
 };
@@ -184,6 +184,11 @@ pub async fn get_btc_balance() -> u64 {
     btc_api::get_balance_of(address).await
 }
 
+#[update]
+pub async fn get_adddress_balance(address: String) -> u64 {
+    btc_api::get_balance_of(address).await
+}
+
 #[query]
 pub fn get_deposit_address_for_ckbtc() -> String {
     Account {
@@ -336,5 +341,65 @@ pub async fn confirm_min_commitment_and_send_reveal_txn(id: u128) {
     ic_cdk_timers::clear_timer(reveal_txn.timer_id.into());
     STATE.with_borrow_mut(|state| state.reveal_txn_in_queue.remove(&id));
 }
+
+#[update]
+pub async fn estimate_etching_fee(args: EtchingArgs) -> (String, String, String){
+    let caller = ic_cdk::id();
+    let derivation_path = generate_derivation_path(&caller);
+    let ecdsa_public_key = get_ecdsa_public_key(derivation_path.clone()).await;
+    let schnorr_public_key = get_schnorr_public_key(derivation_path.clone()).await;
+    let caller_p2pkh_address = public_key_to_p2pkh_address(&ecdsa_public_key);
+
+    // Fetch the UTXOs for the caller's address
+    let utxos_response = btc_api::get_utxos_of(caller_p2pkh_address.clone()).await;
+
+    btc_api::estimate_etching_fee(utxos_response.utxos, schnorr_public_key, caller_p2pkh_address, args).await
+}
+
+async fn calculate_transaction_fee(
+    utxos: &Vec<Utxo>,     // UTXOs of the caller
+    amount: u128,          // Amount to be etched (updated to `u128`)
+    premine: u128,         // Premine amount (updated to `u128`)
+    turbo: bool,           // Turbo mode flag
+    fee_rate: Option<u64>, // Optional fee rate
+) -> u64 {
+    // Constants for transaction size and default fee rate
+    const DEFAULT_FEE_RATE: u64 = 20; // Satoshis per byte
+    const BASE_TX_SIZE: usize = 200; // Base transaction size in bytes
+    const INPUT_SIZE: usize = 148;   // Size of one input in bytes
+    const OUTPUT_SIZE: usize = 34;   // Size of one output in bytes
+
+    let fee_rate = fee_rate.unwrap_or(DEFAULT_FEE_RATE);
+
+    // Calculate the total input amount and the number of UTXOs required
+    let mut total_input: u128 = 0; // Updated to `u128`
+    let mut input_count = 0;
+
+    for utxo in utxos {
+        total_input += utxo.value as u128; // Ensure consistent type for addition
+        input_count += 1;
+        if total_input >= amount + premine {
+            break;
+        }
+    }
+
+    if total_input < amount + premine {
+        ic_cdk::trap("Not enough balance for fee estimation");
+    }
+
+    // Turbo mode adjusts transaction size slightly (e.g., adds a few bytes for metadata)
+    let turbo_size_adjustment = if turbo { 10 } else { 0 };
+
+    // Calculate transaction size
+    let tx_size = BASE_TX_SIZE + (INPUT_SIZE * input_count) + OUTPUT_SIZE * 2 + turbo_size_adjustment;
+
+    // Estimate the fee
+    let estimated_fee: u128 = fee_rate as u128 * tx_size as u128;
+
+    // Convert back to `u64` and handle potential overflow
+    estimated_fee.try_into().expect("Fee exceeds u64 range")
+}
+
+
 
 ic_cdk::export_candid!();

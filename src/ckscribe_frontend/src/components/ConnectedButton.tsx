@@ -5,24 +5,10 @@ import { FaRegCopy } from "react-icons/fa6";
 import { toast } from 'react-toastify';
 import { useAuth } from '../hooks/Context';
 import { useSiwbIdentity } from 'ic-use-siwb-identity';
-import { Principal } from '@dfinity/principal';
-
-type Balance = {
-    name: string;
-    value: number;
-}
+import { Account } from '../../../declarations/ckbtc_minter/ckbtc_minter.did';
 
 
-const tokens = [
-    {
-        name: "ICP",
-        id: "ryjl3-tyaaa-aaaaa-aaaba-cai"
-    },
-    {
-        name: "ckHEDGE",
-        id: "r6qdv-dqaaa-aaaal-qmy7a-cai"
-    }
-]
+
 
 type Ids = {
     principal: string;
@@ -30,50 +16,34 @@ type Ids = {
 }
 
 const ConnectedButton = () => {
-    const [balances, setBalances] = useState<Balance[] | null>(null);
+    const [btcBalance, setBtcBalance] = useState<number | null>(null);
+    const [ckBTCBalance, setCKBTCBalance] = useState<number | null>(null);
     const [ids, setIds] = useState<Ids>({ principal: "", aid: "" });
-    const { logout } = useAuth();
+    const { inscribeActor, ckbtcLedgerActor } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const [loading, setLoading] = useState(true);
+    const { identity, identityAddress, clear } = useSiwbIdentity();
 
     useEffect(() => {
-        const ids = localStorage.getItem("session-data");
-        if (ids !== null) {
-            const data = JSON.parse(ids);
-            setIds({ principal: data.principalId, aid: data.aid });
-            getBalances({ principal: data.principalId, aid: data.aid });
+        if (inscribeActor && identity) {
+            getBalances();
         }
+    }, [inscribeActor, identity]);
 
-    }, []);
-
-    const getBalances = async (ids: Ids) => {
-        if (ids.principal === "" || ids.aid === "") {
-            console.error("Principal or Aid not available");
-            return;
-        }
+    const getBalances = async () => {
+        if (!inscribeActor || !identity) return;
         try {
-            let _balances: Balance[] = [];
-            for (let token of tokens) {
-                let ic = icblast({
-                    local: false
-                })
+            const user: Account = {
+                owner: identity.getPrincipal(),
+                subaccount: []
+            };
 
-                const user = {
-                    owner: Principal.fromText(ids.principal),
-                    subaccount: null
-                }
-                let decimals = 8
-                let actor = await ic(token.id)
-                const bal = await actor.icrc1_balance_of(user);
-                if (token.name !== "ICP") {
-                    decimals = await actor.icrc1_decimals();
-                }
-                const balance = Number(bal) / (10 ** decimals);
-                _balances.push({ name: token.name, value: balance });
-            }
+            const ckbtcBalance = await ckbtcLedgerActor.icrc1_balance_of(user);
+            const btcBalance = await inscribeActor.get_adddress_balance(identityAddress);
+            setCKBTCBalance(Number(ckbtcBalance));
+            setBtcBalance(Number(btcBalance));
             setLoading(false);
-            setBalances(_balances);
         } catch (error) {
             setLoading(false);
             console.log("Error in getting balances: ", error);
@@ -149,52 +119,53 @@ const ConnectedButton = () => {
                     tabIndex={-1}
                 >
                     <div className="py-3 px-4 border-b border-gray-200 text-sm text-gray-700" role="none">
+                    <div className="flex items-center justify-between mt-1">
+                            <p><strong>BTC Address:</strong></p>
+                            <div className="flex items-center gap-1 cursor-pointer text-blue-500" onClick={() => copyToClipboard(ids.aid)}>
+                                <span>{truncateId(identityAddress, 6)}</span>
+                                <FaRegCopy />
+                            </div>
+                        </div>
                         <div className="flex items-center justify-between">
                             <p><strong>Principal ID:</strong></p>
                             <div className="flex items-center gap-1 cursor-pointer text-blue-500" onClick={() => copyToClipboard(ids.principal)}>
-                                <span>{truncateId(ids.principal, 6)}</span>
+                                <span>{truncateId(identity?.getPrincipal().toString(), 6)}</span>
                                 <FaRegCopy />
                             </div>
-                        </div>
-
-                        <div className="flex items-center justify-between mt-1">
-                            <p><strong>AID:</strong></p>
-                            <div className="flex items-center gap-1 cursor-pointer text-blue-500" onClick={() => copyToClipboard(ids.aid)}>
-                                <span>{truncateId(ids.aid, 6)}</span>
-                                <FaRegCopy />
-                            </div>
-                        </div>
+                        </div>   
                     </div>
 
                     <div className="py-3 px-4" role="none">
                         <h3 className="text-sm font-semibold text-gray-800">Balances</h3>
-                        {balances && balances.length > 0 ? (
-                            <ul className="mt-2 space-y-1">
-                                {balances.map((balance) => (
-                                    <li key={balance.name} className="flex justify-between text-sm text-gray-700">
-                                        <span>{balance.name}</span>
-                                        <span>{balance.value.toFixed(2)}</span>
-                                    </li>
-                                ))}
-                            </ul>
+                        {loading ? (
+                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
+                           
                         ) : (
-                            <div className="flex justify-center items-center h-20">
-                                {loading ? (
-                                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
-                                ) : (
-                                    <p className="text-center text-gray-700">No balances available</p>
-                                )}
-                            </div>
+                            <ul className="mt-2 space-y-1">
+
+                                <li className="flex justify-between text-sm text-gray-700">
+                                    <span>BTC</span>
+                                    <span>
+                                        {btcBalance} BTC
+                                    </span>
+                                </li>
+                                <li className="flex justify-between text-sm text-gray-700">
+                                    <span>ckBTC</span>
+                                    <span>
+                                        {ckBTCBalance} ckBTC
+                                    </span>
+                                </li>
+                            </ul>
                         )}
                     </div>
 
                     <div className="border-t border-gray-200" role="none">
                         <button
-                            onClick={logout}
+                            onClick={clear}
                             className="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                             role="menuitem"
                         >
-                            Disconnect 
+                            Disconnect
                         </button>
                     </div>
                 </div>

@@ -1,4 +1,3 @@
-use std::str::FromStr;
 use crate::{
     ecdsa_api::ecdsa_sign, schnorr_api, tags::Tag, utils::sec1_to_der, EtchingArgs, STATE,
 };
@@ -20,6 +19,7 @@ use hex::ToHex;
 use ic_cdk::api::management_canister::bitcoin::{BitcoinNetwork, GetUtxosResponse, Utxo};
 use ic_cdk::println;
 use ordinals::{Artifact, Etching, Rune, Runestone, SpacedRune, Terms};
+use std::str::FromStr;
 
 pub const SIG_HASH_TYPE: EcdsaSighashType = EcdsaSighashType::All;
 
@@ -414,4 +414,127 @@ pub async fn build_and_sign_etching_transaction(
     ic_cdk::println!("Commit tx bytes: {}", hex::encode(commit_tx_bytes));
     ic_cdk::println!("Reveal tx bytes: {}", hex::encode(reveal_tx_bytes));
     (commit_tx_address, commit_tx, reveal_tx)
+}
+
+pub async fn estimate_etching_transaction_fees(
+    owned_utxos: &[Utxo],
+    schnorr_public_key: &[u8],
+    caller_p2pkh_address: String,
+    etching_args: EtchingArgs,
+) -> (String, String, String) {
+    let SpacedRune { rune, spacers } = SpacedRune::from_str(&etching_args.rune).unwrap();
+    let symbol = char::from_u32(etching_args.symbol).unwrap();
+
+    let secp256k1 = Secp256k1::new();
+    let schnorr_public_key: XOnlyPublicKey =
+        PublicKey::from_slice(schnorr_public_key).unwrap().into();
+
+    const PROTOCOL_ID: [u8; 3] = *b"ord";
+    let reveal_script = Builder::new()
+        .push_slice(schnorr_public_key.serialize())
+        .push_opcode(opcodes::all::OP_CHECKSIG)
+        .push_opcode(opcodes::OP_FALSE)
+        .push_opcode(opcodes::all::OP_IF)
+        .push_slice(PROTOCOL_ID)
+        .push_opcode(opcodes::all::OP_ENDIF)
+        .into_script();
+
+  
+    let caller_address = Address::from_str(&caller_p2pkh_address)
+        .unwrap()
+        .assume_checked();
+
+    let taproot_send_info = TaprootBuilder::new()
+        .add_leaf(0, reveal_script.clone())
+        .unwrap()
+        .finalize(&secp256k1, schnorr_public_key)
+        .unwrap();
+
+    let control_block = taproot_send_info
+        .control_block(&(reveal_script.clone(), LeafVersion::TapScript))
+        .unwrap();
+
+    let mut reveal_output = vec![];
+
+    if etching_args.premine > 0 {
+        reveal_output.push(TxOut {
+            script_pubkey: caller_address.script_pubkey(),
+            value: 10_000,
+        });
+    }
+
+    let runestone = Runestone {
+        etching: Some(Etching {
+            rune: Some(rune),
+            symbol: Some(symbol),
+            divisibility: Some(etching_args.divisibility),
+            premine: Some(etching_args.premine),
+            spacers: Some(spacers),
+            turbo: etching_args.turbo,
+            terms: Some(Terms {
+                cap: Some(etching_args.cap),
+                amount: Some(etching_args.amount),
+                height: match etching_args.height {
+                    Some((start, stop)) => (Some(start), Some(stop)),
+                    None => (None, None),
+                },
+                offset: match etching_args.offset {
+                    Some((start, stop)) => (Some(start), Some(stop)),
+                    None => (None, None),
+                },
+            }),
+        }),
+        edicts: vec![],
+        mint: None,
+        pointer: None,
+    };
+
+    let script_pubkey = runestone.encipher();
+    if script_pubkey.len() > 82 {
+        ic_cdk::trap("Exceeds OP_RETURN size of 82");
+    }
+
+    reveal_output.push(TxOut {
+        script_pubkey,
+        value: 0,
+    });
+
+    let fee_rate = FeeRate::from_sat_per_vb(etching_args.fee_rate.unwrap_or(10)).unwrap();
+
+    let (_, reveal_fee) = build_reveal_transaction(
+        0,
+        &control_block,
+        fee_rate,
+        reveal_output.clone(),
+        vec![OutPoint::null()],
+        &reveal_script,
+    );
+
+    let mut total_spent = 0;
+    let mut utxos_to_spend = vec![];
+
+    owned_utxos.iter().for_each(|utxo| {
+        total_spent += utxo.value;
+        utxos_to_spend.push(utxo);
+    });
+
+    let sig_bytes = 73; // Approximation for signature size
+    let commit_fee = FeeRate::from_sat_per_vb(
+        fee_rate.to_sat_per_kwu() * (utxos_to_spend.len() + 1) as u64 + sig_bytes,
+    )
+    .unwrap();
+
+    let total_fees = commit_fee.to_sat_per_kwu() + reveal_fee.to_sat();
+
+    ic_cdk::println!(
+        "Estimated commit fee: {}\nEstimated reveal fee: {}",
+        commit_fee.to_sat_per_kwu(),
+        reveal_fee.to_sat()
+    );
+
+    (
+        "Commit fee: ".to_string() + &commit_fee.to_sat_per_kwu().to_string(),
+        "Reveal fee: ".to_string() + &reveal_fee.to_sat().to_string(),
+        "Total fees: ".to_string() + &total_fees.to_string(),
+    )
 }
