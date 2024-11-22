@@ -53,7 +53,7 @@ It will return an address
 3. Sending Bitcoin to the address
 As we're on the localhost, we will be using `bitcoin-cli` for minting some Bitcoins to the address
 ```bash
-docker compose exec bitcoind bitcoin-cli generatetoaddress 1 bcrt1qec6lzr4ewedafmahrdlua6r00fkau59nx30jsm
+docker compose exec bitcoind bitcoin-cli generatetoaddress 1 bcrt1qzkulmsdu5gujnh4sl05nz6ep22p2sm9y08f2v4
 
 docker compose exec bitcoind bitcoin-cli -generate 101
 ```
@@ -96,7 +96,7 @@ dfx canister call inscribe confirm_and_convert_ckbtc
 
 4. Fetch the status of your Converstion transaction
 ```
-dfx canister call inscribe query_conversion_status '(5)'
+dfx canister call inscribe query_conversion_status '(3)'
 ```
 
 5. Mint blocks to finalize the Transaction
@@ -132,6 +132,21 @@ dfx canister call inscribe get_btc_balance
 
 ```bash
 dfx canister call inscribe etch_rune '(record{
+    rune= "CKSCRIBE.RUNE.ETCHTER";
+    premine= 0;
+    divisibility= 2;
+    symbol= 65;
+    cap= 20000;
+    amount= 200;
+    turbo= true;
+    fee_rate= null;
+    height= null;
+    offset= opt record { 100; 200 }
+})'
+
+
+
+dfx canister call inscribe estimate_etching_fee '(record{
     rune= "CKSCRIBE.RUNE.ETCHTER.TEST";
     premine= 0;
     divisibility= 2;

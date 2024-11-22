@@ -9,7 +9,7 @@ use ckbtc_api::{CkBTC, CkBTCMinter};
 use hex::ToHex;
 use ic_cdk::{
     api::management_canister::{
-        bitcoin::{BitcoinNetwork, Utxo},
+        bitcoin::{BitcoinNetwork},
         ecdsa::{EcdsaCurve, EcdsaKeyId},
     }, init, post_upgrade, pre_upgrade, query, update
 };
@@ -223,6 +223,13 @@ pub async fn confirm_and_convert_ckbtc() -> u64 {
     let estimated_fee = ckbtc_minter.estimate_withdrawal_fee(Some(balance)).await;
     let deposit_fee = ckbtc_minter.get_deposit_fee().await;
     let total_fee = estimated_fee.bitcoin_fee + estimated_fee.minter_fee;
+
+    ic_cdk::println!("\n\n\n\n\n");
+    ic_cdk::println!("Deposit Fee: {}", deposit_fee);
+    ic_cdk::println!("Total Fee: {}", total_fee);
+    ic_cdk::println!("Balance: {}", balance);
+    ic_cdk::println!("\n\n\n\n\n");
+
     if balance <= total_fee + deposit_fee + 20000 {
         let err_msg = format!(
             "Balance too Low! Current Balance: {}, Expected atleast {}",
@@ -243,7 +250,11 @@ pub async fn confirm_and_convert_ckbtc() -> u64 {
         ic_cdk::trap(&err_msg)
     }
     let amount = balance - 10 - total_fee - deposit_fee;
+
+    ic_cdk::println!("\n\n\n\n\n");
     ic_cdk::println!("Amount: {}", amount);
+    ic_cdk::println!("\n\n\n\n\n");
+
     match ckbtc_minter
         .retrieve_btc(ckbtc_api::RetrieveBtcArgs {
             address: p2pkh_address,

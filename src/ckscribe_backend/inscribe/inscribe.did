@@ -24,6 +24,7 @@ type Result_2 = variant { Ok : SignatureReply; Err : text };
 type SignatureReply = record { message : text; signature_hex : text };
 service : (InitArgs) -> {
   confirm_and_convert_ckbtc : () -> (nat64);
+  estimate_etching_fee : (EtchingArgs) -> (text, text, text);
   etch_rune : (EtchingArgs) -> (text, text);
   generate_and_verify_schnorr : () -> (Result);
   get_adddress_balance : (text) -> (nat64);
