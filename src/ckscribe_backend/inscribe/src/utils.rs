@@ -4,7 +4,7 @@ use icrc_ledger_types::icrc1::account::Subaccount;
 use sha2::Digest;
 use tiny_keccak::{Hasher, Sha3};
 
-use crate::{SignatureVerificationReply, STATE};
+use crate::STATE;
 
 // pub fn verify_bip340_secp256k1(
 //     sig_bytes: &[u8],

@@ -4,8 +4,9 @@ import icblast from "@infu/icblast"
 import { FaRegCopy } from "react-icons/fa6";
 import { toast } from 'react-toastify';
 import { useAuth } from '../hooks/Context';
-import { useSiwbIdentity } from 'ic-use-siwb-identity';
 import { Account } from '../../../declarations/ckbtc_minter/ckbtc_minter.did';
+import { useSiwbIdentity } from 'ic-siwb-lasereyes-connector';
+import { useLaserEyes } from '@omnisat/lasereyes';
 
 
 
@@ -24,6 +25,7 @@ const ConnectedButton = () => {
     const dropdownRef = useRef<HTMLDivElement>(null);
     const [loading, setLoading] = useState(true);
     const { identity, identityAddress, clear } = useSiwbIdentity();
+    const p = useLaserEyes();
 
     useEffect(() => {
         if (inscribeActor && identity) {
@@ -32,6 +34,8 @@ const ConnectedButton = () => {
     }, [inscribeActor, identity]);
 
     const getBalances = async () => {
+        const btcBal = await p.getBalance();
+        setBtcBalance(Number(btcBal) * 0.00000001);
         if (!inscribeActor || !identity) return;
         try {
             const user: Account = {
@@ -40,9 +44,9 @@ const ConnectedButton = () => {
             };
 
             const ckbtcBalance = await ckbtcLedgerActor.icrc1_balance_of(user);
-            const btcBalance = await inscribeActor.get_adddress_balance(identityAddress);
+            // const btcBalance = await inscribeActor.get_adddress_balance(identityAddress);
             setCKBTCBalance(Number(ckbtcBalance));
-            setBtcBalance(Number(btcBalance));
+            // setBtcBalance(Number(btcBalance));
             setLoading(false);
         } catch (error) {
             setLoading(false);
@@ -82,6 +86,8 @@ const ConnectedButton = () => {
         navigator.clipboard.writeText(text);
         toast.success("Copied to clipboard");
     };
+
+    console.log("btc balance: ", btcBalance);
 
     return (
         <div className="relative inline-block text-left" ref={dropdownRef}>

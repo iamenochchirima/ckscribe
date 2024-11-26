@@ -53,7 +53,7 @@ It will return an address
 3. Sending Bitcoin to the address
 As we're on the localhost, we will be using `bitcoin-cli` for minting some Bitcoins to the address
 ```bash
-docker compose exec bitcoind bitcoin-cli generatetoaddress 1 bcrt1qzkulmsdu5gujnh4sl05nz6ep22p2sm9y08f2v4
+docker compose exec bitcoind bitcoin-cli generatetoaddress 1 bcrt1qpvwg9y4n0mdyedwu4maz2dapsrktn54eppv6q9
 
 docker compose exec bitcoind bitcoin-cli -generate 101
 ```
@@ -82,7 +82,7 @@ dfx canister call inscribe get_deposit_address_for_ckbtc
 ```bash
 dfx canister call ckbtc_ledger icrc1_transfer '(record{
     to = record { owner = principal"dyb47-nqaaa-aaaag-qjvba-cai"; };
-    amount = 200_000_000;
+    amount = 4_900_000_000;
     fee = opt 10;
 })'
 ```

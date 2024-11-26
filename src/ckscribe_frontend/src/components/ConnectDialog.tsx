@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Button, Modal, Spin, Typography } from 'antd';
-import { useSiwbIdentity } from 'ic-use-siwb-identity';
+import { useSiwbIdentity } from 'ic-siwb-lasereyes-connector';
+import { UNISAT, useLaserEyes, WIZZ, XVERSE, PHANTOM } from '@omnisat/lasereyes';
 
 export default function ConnectDialog({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (isOpen: boolean) => void }) {
-  //   const { connect, connectors, error, isPending, variables, reset } = useConnect();
-  //   const { isConnected } = useAccount();
-  const { prepareLogin, isPrepareLoginIdle, prepareLoginError, loginError, setWalletProvider, login, getAddress, connectedBtcAddress, identity } =
+  const p = useLaserEyes();
+
+  const { prepareLogin, isPrepareLoginIdle, prepareLoginError, loginError, setLaserEyes, login, getAddress, connectedBtcAddress, identity } =
     useSiwbIdentity();
 
   const [loading, setLoading] = useState<boolean>(false);
@@ -16,8 +17,12 @@ export default function ConnectDialog({ isOpen, setIsOpen }: { isOpen: boolean; 
   useEffect(() => {
     if (!isPrepareLoginIdle) return;
     const address = getAddress();
-    console.log({ address });
+
     if (address) {
+      console.log({
+        address,
+        // canisterId: process.env.
+      });
       prepareLogin();
       if (connectedBtcAddress && !identity && manually) {
         (async () => {
@@ -36,12 +41,12 @@ export default function ConnectDialog({ isOpen, setIsOpen }: { isOpen: boolean; 
   /**
    * Show an error toast if the prepareLogin() call fails.
    */
-  useEffect(() => {}, [prepareLoginError]);
+  useEffect(() => { }, [prepareLoginError]);
 
   /**
    * Show an error toast if the login call fails.
    */
-  useEffect(() => {}, [loginError]);
+  useEffect(() => { }, [loginError]);
 
   return (
     <Modal
@@ -58,7 +63,7 @@ export default function ConnectDialog({ isOpen, setIsOpen }: { isOpen: boolean; 
           key="wizz"
           onClick={async () => {
             setManually(true);
-            await setWalletProvider('wizz');
+            await setLaserEyes(p, WIZZ);
           }}
           disabled={loading}
           block
@@ -71,18 +76,29 @@ export default function ConnectDialog({ isOpen, setIsOpen }: { isOpen: boolean; 
           key="unisat"
           onClick={async () => {
             setManually(true);
-            await setWalletProvider('unisat');
+            await setLaserEyes(p, UNISAT);
           }}
           disabled={loading}
           block
         >
           Unisat Wallet
         </Button>
+        {/* <Button
+          key="phantom"
+          onClick={async () => {
+            setManually(true);
+            await setLaserEyes(p, PHANTOM);
+          }}
+          disabled={loading}
+          block
+        >
+          Phantom Wallet
+        </Button> */}
         <Button
           key="xverse"
           onClick={async () => {
             setManually(true);
-            await setWalletProvider('BitcoinProvider');
+            await setLaserEyes(p, XVERSE);
           }}
           disabled={loading}
           block

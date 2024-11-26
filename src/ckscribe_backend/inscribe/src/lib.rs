@@ -296,6 +296,16 @@ pub struct EtchingArgs {
     pub fee_rate: Option<u64>,
 }
 
+#[derive(CandidType, Deserialize, Debug)]
+pub struct MintArgs {
+    pub rune_id: String,
+    pub amount: u64,
+    pub dst: String,
+    pub fee_rate: Option<u64>,
+    pub metadata: Option<HashMap<String, String>>,
+}
+
+
 #[update]
 pub async fn etch_rune(mut args: EtchingArgs) -> (String, String) {
     let caller = ic_cdk::id();
@@ -336,6 +346,28 @@ pub async fn etch_rune(mut args: EtchingArgs) -> (String, String) {
     };
     STATE.with_borrow_mut(|state| state.reveal_txn_in_queue.insert(id, queue_txn));
     (commit_txid, reveal_tx.txid().encode_hex())
+}
+
+#[update]
+pub async fn mint_runes(args: MintArgs) -> String {
+    let caller = ic_cdk::id();
+    let derivation_path = generate_derivation_path(&caller);
+    let ecdsa_public_key = get_ecdsa_public_key(derivation_path.clone()).await;
+    let caller_p2pkh_address = public_key_to_p2pkh_address(&ecdsa_public_key);
+    let balance = btc_api::get_balance_of(caller_p2pkh_address.clone()).await;
+    if balance < 10_000_000 {
+        ic_cdk::trap("Not enough balance")
+    }
+    let utxos_response = btc_api::get_utxos_of(caller_p2pkh_address.clone()).await;
+    let mint_txn = btc_api::build_and_sign_mint_transaction(
+        &derivation_path,
+        &utxos_response.utxos,
+        &ecdsa_public_key,
+        caller_p2pkh_address,
+        args,
+    )
+    .await;
+    btc_api::send_bitcoin_transaction(mint_txn).await
 }
 
 pub async fn confirm_min_commitment_and_send_reveal_txn(id: u128) {

@@ -1,5 +1,5 @@
 use crate::{
-    ecdsa_api::ecdsa_sign, schnorr_api, tags::Tag, utils::sec1_to_der, EtchingArgs, STATE,
+    ecdsa_api::ecdsa_sign, schnorr_api, tags::Tag, utils::sec1_to_der, EtchingArgs, MintArgs, STATE
 };
 use bitcoin::{
     absolute::LockTime,
@@ -415,6 +415,84 @@ pub async fn build_and_sign_etching_transaction(
     ic_cdk::println!("Reveal tx bytes: {}", hex::encode(reveal_tx_bytes));
     (commit_tx_address, commit_tx, reveal_tx)
 }
+
+
+pub async fn build_and_sign_mint_transaction(
+    derivation_path: &Vec<Vec<u8>>,
+        owned_utxos: &[Utxo],
+        ecdsa_public_key: &[u8],
+        caller_p2pkh_address: String,
+        mint_args: MintArgs,
+    ) -> Transaction {
+        // Define constants and initialize structures
+        const PROTOCOL_ID: [u8; 3] = *b"ord";
+        let secp256k1 = Secp256k1::new();
+        
+        // Use ECDSA public key here
+        let ecdsa_public_key = PublicKey::from_slice(ecdsa_public_key).unwrap();
+        
+        // Load the network (mainnet, testnet, etc.)
+        let network = STATE.with_borrow(|state| {
+            let network = state.network.as_ref().unwrap();
+            match network {
+                BitcoinNetwork::Mainnet => Network::Bitcoin,
+                BitcoinNetwork::Testnet => Network::Testnet,
+                BitcoinNetwork::Regtest => Network::Regtest,
+            }
+        });
+    
+        // Generate the minting script using ECDSA public key
+        let mint_script = Builder::new()
+            .push_slice(ecdsa_public_key.to_bytes().as_ref())
+            .push_opcode(opcodes::all::OP_CHECKSIG) // Use ECDSA signature check
+            .push_slice(PROTOCOL_ID)
+            .push_slice(mint_args.rune_id.as_bytes()) // Rune identifier
+            .push_slice(&mint_args.amount.to_le_bytes()) // Minting amount
+            .into_script();
+    
+        // Calculate the mint address (this part may depend on your custom implementation)
+        let mint_address = Address::from_script(&mint_script, network).unwrap();
+    
+        // Outputs: Minted tokens and change
+        let mut outputs = vec![TxOut {
+            script_pubkey: mint_address.script_pubkey(),
+            value: 0, // Rune tokens, not Bitcoin value
+        }];
+    
+        // Calculate input and fee
+        let total_input_value = owned_utxos.iter().map(|utxo| utxo.value).sum::<u64>();
+        let fee_rate = FeeRate::from_sat_per_vb(mint_args.fee_rate.unwrap_or(10)).unwrap();
+        let tx_fee = fee_rate.calculate_fee(outputs.len(), owned_utxos.len());
+        let change_value = total_input_value - tx_fee;
+    
+        if change_value > 0 {
+            // Change output to the caller's address
+            let caller_address = Address::from_str(&caller_p2pkh_address).unwrap().assume_checked();
+            outputs.push(TxOut {
+                script_pubkey: caller_address.script_pubkey(),
+                value: change_value,
+            });
+        }
+    
+        // Build the transaction
+        let tx = Transaction {
+            version: 2,
+            lock_time: 0,
+            input: owned_utxos
+                .iter()
+                .map(|utxo| TxIn {
+                    previous_output: utxo.outpoint.clone(),
+                    script_sig: Script::new(),
+                    sequence: 0xffffffff,
+                    witness: vec![],
+                })
+                .collect(),
+            output: outputs,
+        };
+    
+        tx
+}
+
 
 pub async fn estimate_etching_transaction_fees(
     owned_utxos: &[Utxo],

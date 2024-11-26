@@ -1,7 +1,8 @@
-import { useSiwbIdentity } from "ic-use-siwb-identity";
+
 import ConnectedButton from "./ConnectedButton";
 import { useState } from "react";
 import ConnectDialog from "./ConnectDialog";
+import { useSiwbIdentity } from "ic-siwb-lasereyes-connector";
 
 const ConnectWallet = () => {
   const { isInitializing, identity } = useSiwbIdentity();

@@ -14,13 +14,13 @@ import { canisterId as iiCanId } from "../../../declarations/internet_identity";
 import { canisterId as inscribeCanisterId, idlFactory as inscribeIDL } from "../../../declarations/inscribe";
 import { canisterId as ckbtcMinterCanisterId, idlFactory as ckbtcMinterIDL } from "../../../declarations/ckbtc_minter";
 import { canisterId as ckbtcLedgerCanisterId, idlFactory as ckbtcLedgerIDL } from "../../../declarations/ckbtc_ledger";
-import { Actor, ActorSubclass, HttpAgent, Identity } from "@dfinity/agent";
+import { Actor, ActorSubclass, HttpAgent } from "@dfinity/agent";
 import { host, network } from "./constants";
 import { _SERVICE as InscribeSERVICE } from '../../../declarations/inscribe/inscribe.did';
 import { _SERVICE as ckbtcMinterSERVICE } from '../../../declarations/ckbtc_minter/ckbtc_minter.did';
 import { _SERVICE as ckbtcLedgerSERVICE } from '../../../declarations/ckbtc_ledger/ckbtc_ledger.did';
+import { useSiwbIdentity } from "ic-siwb-lasereyes-connector";
 
-import { useSiwbIdentity } from "ic-use-siwb-identity";
 
 
 interface AuthContextType {
