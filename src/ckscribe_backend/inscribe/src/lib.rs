@@ -348,6 +348,22 @@ pub async fn etch_rune(mut args: EtchingArgs) -> (String, String) {
     (commit_txid, reveal_tx.txid().encode_hex())
 }
 
+pub async fn confirm_min_commitment_and_send_reveal_txn(id: u128) {
+    let reveal_txn = STATE.with_borrow(|state| state.reveal_txn_in_queue.get(&id).unwrap().clone());
+    let utxos_response = btc_api::get_utxos_of(reveal_txn.commit_tx_address).await;
+    let utxos = utxos_response.utxos;
+    if utxos.is_empty() {
+        ic_cdk::trap("No UTXOs Found")
+    }
+    if utxos_response.tip_height - utxos[0].height < Runestone::COMMIT_CONFIRMATIONS as u32 - 1 {
+        ic_cdk::trap("Not enough commit confirmation")
+    }
+    btc_api::send_bitcoin_transaction(reveal_txn.reveal_txn).await;
+    ic_cdk_timers::clear_timer(reveal_txn.timer_id.into());
+    STATE.with_borrow_mut(|state| state.reveal_txn_in_queue.remove(&id));
+}
+
+
 #[update]
 pub async fn mint_runes(args: MintArgs) -> String {
     let caller = ic_cdk::id();
@@ -368,21 +384,6 @@ pub async fn mint_runes(args: MintArgs) -> String {
     )
     .await;
     btc_api::send_bitcoin_transaction(mint_txn).await
-}
-
-pub async fn confirm_min_commitment_and_send_reveal_txn(id: u128) {
-    let reveal_txn = STATE.with_borrow(|state| state.reveal_txn_in_queue.get(&id).unwrap().clone());
-    let utxos_response = btc_api::get_utxos_of(reveal_txn.commit_tx_address).await;
-    let utxos = utxos_response.utxos;
-    if utxos.is_empty() {
-        ic_cdk::trap("No UTXOs Found")
-    }
-    if utxos_response.tip_height - utxos[0].height < Runestone::COMMIT_CONFIRMATIONS as u32 - 1 {
-        ic_cdk::trap("Not enough commit confirmation")
-    }
-    btc_api::send_bitcoin_transaction(reveal_txn.reveal_txn).await;
-    ic_cdk_timers::clear_timer(reveal_txn.timer_id.into());
-    STATE.with_borrow_mut(|state| state.reveal_txn_in_queue.remove(&id));
 }
 
 #[update]
