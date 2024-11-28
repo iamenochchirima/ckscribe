@@ -3,13 +3,12 @@
 use std::{cell::RefCell, collections::HashMap, time::Duration};
 
 use bitcoin::Transaction;
-use btc_api::check_etching;
 use candid::{CandidType, Principal};
 use ckbtc_api::{CkBTC, CkBTCMinter};
 use hex::ToHex;
 use ic_cdk::{
     api::management_canister::{
-        bitcoin::{BitcoinNetwork},
+        bitcoin::{BitcoinNetwork, Utxo},
         ecdsa::{EcdsaCurve, EcdsaKeyId},
     }, init, post_upgrade, pre_upgrade, query, update
 };
@@ -19,17 +18,17 @@ use ic_stable_structures::{
     DefaultMemoryImpl, Memory as _,
 };
 use icrc_ledger_types::icrc1::account::Account;
-use ordinals::Runestone;
+use ordinals::{RuneId, Runestone};
 use serde::{Deserialize, Serialize};
 use slotmap::{Key, KeyData};
+use wallet::{etch::{build_and_sign_etching_transaction, check_etching, estimate_etching_transaction_fees}, mint::build_and_sign_mint_transaction};
 
 use crate::{
-    btc_api::build_and_sign_etching_transaction,
     ecdsa_api::get_ecdsa_public_key,
     schnorr_api::get_schnorr_public_key,
     utils::{always_fail, generate_derivation_path, public_key_to_p2pkh_address},
 };
-
+pub mod wallet;
 pub mod btc_api;
 pub mod ckbtc_api;
 pub mod ecdsa_api;
@@ -296,9 +295,15 @@ pub struct EtchingArgs {
     pub fee_rate: Option<u64>,
 }
 
+#[derive(CandidType, Deserialize, Debug, Clone)]
+pub struct RuneMintId {
+    pub block: u64,
+    pub tx: u32,
+}
+
 #[derive(CandidType, Deserialize, Debug)]
 pub struct MintArgs {
-    pub rune_id: String,
+    pub rune_id: RuneMintId,
     pub amount: u64,
     pub dst: String,
     pub fee_rate: Option<u64>,
@@ -369,21 +374,33 @@ pub async fn mint_runes(args: MintArgs) -> String {
     let caller = ic_cdk::id();
     let derivation_path = generate_derivation_path(&caller);
     let ecdsa_public_key = get_ecdsa_public_key(derivation_path.clone()).await;
+    let schnorr_public_key = get_schnorr_public_key(derivation_path.clone()).await;
     let caller_p2pkh_address = public_key_to_p2pkh_address(&ecdsa_public_key);
     let balance = btc_api::get_balance_of(caller_p2pkh_address.clone()).await;
     if balance < 10_000_000 {
         ic_cdk::trap("Not enough balance")
     }
     let utxos_response = btc_api::get_utxos_of(caller_p2pkh_address.clone()).await;
-    let mint_txn = btc_api::build_and_sign_mint_transaction(
+    let mint_txn = build_and_sign_mint_transaction(
         &derivation_path,
         &utxos_response.utxos,
         &ecdsa_public_key,
+        &schnorr_public_key,
         caller_p2pkh_address,
         args,
     )
     .await;
     btc_api::send_bitcoin_transaction(mint_txn).await
+}
+
+#[update]
+pub async fn get_utxos() -> Vec<Utxo> {
+    let caller = ic_cdk::id();
+    let derivation_path = generate_derivation_path(&caller);
+    let ecdsa_public_key = get_ecdsa_public_key(derivation_path.clone()).await;
+    let caller_p2pkh_address = public_key_to_p2pkh_address(&ecdsa_public_key);
+    let utxos_response = btc_api::get_utxos_of(caller_p2pkh_address).await;
+    utxos_response.utxos
 }
 
 #[update]
@@ -397,7 +414,7 @@ pub async fn estimate_etching_fee(args: EtchingArgs) -> (String, String, String)
     // Fetch the UTXOs for the caller's address
     let utxos_response = btc_api::get_utxos_of(caller_p2pkh_address.clone()).await;
 
-    btc_api::estimate_etching_transaction_fees(&utxos_response.utxos, &schnorr_public_key, caller_p2pkh_address, args).await
+    estimate_etching_transaction_fees(&utxos_response.utxos, &schnorr_public_key, caller_p2pkh_address, args).await
 }
 
 

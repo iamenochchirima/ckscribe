@@ -132,7 +132,7 @@ dfx canister call inscribe get_btc_balance
 
 ```bash
 dfx canister call inscribe etch_rune '(record{
-    rune= "CKSCRIBE.RUNE.ETCHTER";
+    rune= "CKSCRIBE.RUNE.ETCHTER.T";
     premine= 0;
     divisibility= 2;
     symbol= 65;
