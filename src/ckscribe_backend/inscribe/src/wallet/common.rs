@@ -1,16 +1,16 @@
-use crate::bitcoin_api;
+use crate::{btc_api, MintArgs};
 use bitcoin::{
     absolute::LockTime, blockdata::witness::Witness, hashes::Hash, Address, Network, OutPoint,
     ScriptBuf, Sequence, Transaction, TxIn, TxOut, Txid,
 };
 use ic_cdk::api::management_canister::bitcoin::{BitcoinNetwork, Utxo};
+use ordinals::{RuneId, Runestone};
 
-pub fn build_transaction_with_fee(
+pub fn build_transaction_mint_with_fee(
     own_utxos: &[Utxo],
     own_address: &Address,
-    dst_address: &Address,
-    amount: u64,
     fee: u64,
+    mint_args: MintArgs,
 ) -> Result<(Transaction, Vec<TxOut>), String> {
     // Assume that any amount below this threshold is dust.
     const DUST_THRESHOLD: u64 = 1_000;
@@ -24,17 +24,6 @@ pub fn build_transaction_with_fee(
     for utxo in own_utxos.iter().rev() {
         total_spent += utxo.value;
         utxos_to_spend.push(utxo);
-        if total_spent >= amount + fee {
-            // We have enough inputs to cover the amount we want to spend.
-            break;
-        }
-    }
-
-    if total_spent < amount + fee {
-        return Err(format!(
-            "Insufficient balance: {}, trying to transfer {} satoshi with fee {}",
-            total_spent, amount, fee
-        ));
     }
 
     let inputs: Vec<TxIn> = utxos_to_spend
@@ -58,12 +47,26 @@ pub fn build_transaction_with_fee(
         })
         .collect();
 
+        let rune_id = RuneId::new(mint_args.rune_id.block, mint_args.rune_id.tx);
+
+        let runestone = Runestone {
+            etching: None,
+            edicts: vec![],
+            mint: rune_id,
+            pointer: None,
+        };
+    
+        let script_pubkey = runestone.encipher();
+        if script_pubkey.len() > 82 {
+            ic_cdk::trap("Exceeds OP_RETURN size of 82")
+        }
+
     let mut outputs = vec![TxOut {
-        script_pubkey: dst_address.script_pubkey(),
-        value: amount,
+        script_pubkey: script_pubkey,
+        value: 0,
     }];
 
-    let remaining_amount = total_spent - amount - fee;
+    let remaining_amount = total_spent - fee;
 
     if remaining_amount >= DUST_THRESHOLD {
         outputs.push(TxOut {
@@ -93,7 +96,7 @@ pub fn transform_network(network: BitcoinNetwork) -> Network {
 
 pub async fn get_fee_per_byte(network: BitcoinNetwork) -> u64 {
     // Get fee percentiles from previous transactions to estimate our own fee.
-    let fee_percentiles = bitcoin_api::get_current_fee_percentiles(network).await;
+    let fee_percentiles = btc_api::get_current_fee_percentiles(network).await;
 
     if fee_percentiles.is_empty() {
         // There are no fee percentiles. This case can only happen on a regtest

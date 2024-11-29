@@ -374,8 +374,8 @@ pub async fn mint_runes(args: MintArgs) -> String {
     let caller = ic_cdk::id();
     let derivation_path = generate_derivation_path(&caller);
     let ecdsa_public_key = get_ecdsa_public_key(derivation_path.clone()).await;
-    let schnorr_public_key = get_schnorr_public_key(derivation_path.clone()).await;
-    let caller_p2pkh_address = public_key_to_p2pkh_address(&ecdsa_public_key);
+    let own_p2pkh_address = public_key_to_p2pkh_address(&ecdsa_public_key);
+    let key_name = STATE.with_borrow(|state| state.ecdsa_key.as_ref().unwrap().to_key_id().name.clone());
     let balance = btc_api::get_balance_of(caller_p2pkh_address.clone()).await;
     if balance < 10_000_000 {
         ic_cdk::trap("Not enough balance")
@@ -385,8 +385,8 @@ pub async fn mint_runes(args: MintArgs) -> String {
         &derivation_path,
         &utxos_response.utxos,
         &ecdsa_public_key,
-        &schnorr_public_key,
-        caller_p2pkh_address,
+        key_name,
+        own_p2pkh_address,
         args,
     )
     .await;
