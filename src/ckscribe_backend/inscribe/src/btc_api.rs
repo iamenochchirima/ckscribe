@@ -1,4 +1,4 @@
-use crate::wallet::wallet_types::GetBlockHeadersRequest;
+use crate::wallet::wallet_types::{GetBlockHeadersRequest, GetBlockHeadersResponse};
 use crate::STATE;
 use bitcoin::{sighash::EcdsaSighashType, Transaction,
     absolute::LockTime, blockdata::witness::Witness, hashes::Hash, Address, OutPoint,
@@ -62,7 +62,7 @@ pub async fn send_bitcoin_transaction(txn: Transaction) -> String {
 }
 
 /// Returns the block headers in the given height range.
-pub(crate) async fn get_block_headers(network: BitcoinNetwork, start_height: u32, end_height: Option<u32>) -> GetBlockHeadersResponse{
+pub(crate) async fn _get_block_headers(network: BitcoinNetwork, start_height: u32, end_height: Option<u32>) -> GetBlockHeadersResponse{
     let cycles = match network {
         BitcoinNetwork::Mainnet => 10_000_000_000,
         BitcoinNetwork::Testnet => 10_000_000_000,

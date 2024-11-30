@@ -18,7 +18,7 @@ use ic_stable_structures::{
     DefaultMemoryImpl, Memory as _,
 };
 use icrc_ledger_types::icrc1::account::Account;
-use ordinals::{RuneId, Runestone};
+use ordinals::Runestone;
 use serde::{Deserialize, Serialize};
 use slotmap::{Key, KeyData};
 use wallet::{etch::{build_and_sign_etching_transaction, check_etching, estimate_etching_transaction_fees}, mint::build_and_sign_mint_transaction};
@@ -307,7 +307,6 @@ pub struct MintArgs {
     pub amount: u64,
     pub dst: String,
     pub fee_rate: Option<u64>,
-    pub metadata: Option<HashMap<String, String>>,
 }
 
 
@@ -376,11 +375,11 @@ pub async fn mint_runes(args: MintArgs) -> String {
     let ecdsa_public_key = get_ecdsa_public_key(derivation_path.clone()).await;
     let own_p2pkh_address = public_key_to_p2pkh_address(&ecdsa_public_key);
     let key_name = STATE.with_borrow(|state| state.ecdsa_key.as_ref().unwrap().to_key_id().name.clone());
-    let balance = btc_api::get_balance_of(caller_p2pkh_address.clone()).await;
+    let balance = btc_api::get_balance_of(own_p2pkh_address.clone()).await;
     if balance < 10_000_000 {
         ic_cdk::trap("Not enough balance")
     }
-    let utxos_response = btc_api::get_utxos_of(caller_p2pkh_address.clone()).await;
+    let utxos_response = btc_api::get_utxos_of(own_p2pkh_address.clone()).await;
     let mint_txn = build_and_sign_mint_transaction(
         &derivation_path,
         &utxos_response.utxos,

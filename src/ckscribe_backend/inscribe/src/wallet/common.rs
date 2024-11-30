@@ -10,7 +10,7 @@ pub fn build_transaction_mint_with_fee(
     own_utxos: &[Utxo],
     own_address: &Address,
     fee: u64,
-    mint_args: MintArgs,
+    mint_args: &MintArgs,
 ) -> Result<(Transaction, Vec<TxOut>), String> {
     // Assume that any amount below this threshold is dust.
     const DUST_THRESHOLD: u64 = 1_000;

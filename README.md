@@ -53,7 +53,7 @@ It will return an address
 3. Sending Bitcoin to the address
 As we're on the localhost, we will be using `bitcoin-cli` for minting some Bitcoins to the address
 ```bash
-docker compose exec bitcoind bitcoin-cli generatetoaddress 1 bcrt1qpvwg9y4n0mdyedwu4maz2dapsrktn54eppv6q9
+docker compose exec bitcoind bitcoin-cli generatetoaddress 1 bcrt1qhkvzr6n4rwlj9hjvjm2jrezkvxdng4d4lsxdcs
 
 docker compose exec bitcoind bitcoin-cli -generate 101
 ```
@@ -132,7 +132,7 @@ dfx canister call inscribe get_btc_balance
 
 ```bash
 dfx canister call inscribe etch_rune '(record{
-    rune= "CKSCRIBE.RUNE.ETCHTER.T";
+    rune= "CKSCRIBE.RUNE.ETCHTER.SAT";
     premine= 0;
     divisibility= 2;
     symbol= 65;
@@ -143,8 +143,18 @@ dfx canister call inscribe etch_rune '(record{
     height= null;
     offset= opt record { 100; 200 }
 })'
+```
 
+### Mint an etched Rune
 
+```bash
+dfx canister call inscribe mint_runes '(record{
+    dst= "shu3y-t65bi-rhvef-c7vvy-arrzh-emws6-g2uew-hpgh2-uvjqi-7s3b2-zae";
+    fee_rate= null;
+    amount= 200;
+    rune_id= record { tx= 1; block= 948 }
+})'
+```
 
 dfx canister call inscribe estimate_etching_fee '(record{
     rune= "CKSCRIBE.RUNE.ETCHTER.TEST";

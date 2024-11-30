@@ -16,7 +16,6 @@ use bitcoin::{
     TxOut, Txid, Witness,
 };
 use ic_cdk::api::management_canister::bitcoin::{BitcoinNetwork, Utxo};
-use ic_cdk::println;
 use ordinals::{Artifact, Etching, Rune, Runestone, SpacedRune, Terms};
 use std::str::FromStr;
 
